@@ -30,7 +30,4 @@ pub struct Header {
 
     /// The length of this RTCP packet in 32-bit words minus one, including the header and any padding.
     pub length: u16,
-
-    /// The synchronization source identifier for the originator of this SR packet.
-    pub ssrc: u32,
 }
