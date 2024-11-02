@@ -45,7 +45,10 @@ impl SenderReport {
 impl Marshal for SenderReport {
     fn marshal(&self, buf: &mut [u8]) -> Result<usize, risty_core::MarshalError> {
         self.pack_to_slice(&mut buf[0..=27])?;
-        Ok(28)
+        Ok(self.marshal_size())
+    }
+    fn marshal_size(&self) -> usize {
+        28
     }
 }
 

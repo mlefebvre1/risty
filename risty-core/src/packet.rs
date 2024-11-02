@@ -8,4 +8,5 @@ pub enum MarshalError {
 
 pub trait Marshal {
     fn marshal(&self, buf: &mut [u8]) -> Result<usize, MarshalError>;
+    fn marshal_size(&self) -> usize;
 }

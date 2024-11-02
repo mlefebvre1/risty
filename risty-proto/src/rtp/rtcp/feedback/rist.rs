@@ -1,14 +1,12 @@
-use super::header::{Header, PacketType, VERSION};
+use std::time::Instant;
+
+use super::Subtype;
+use crate::rtp::rtcp::header::{Header, PacketType, VERSION};
+
+use packed_struct::prelude::*;
+use risty_core::Marshal;
 
 const RIST_NAME: u32 = 0x52495354;
-const GENERIC_NACK_CODE: u8 = 1;
-
-/// This field identifies the type of the message
-pub enum Subtype {
-    RangeBasedNACK = 0,
-    EchoRequest = 2,
-    EchoResponse = 3,
-}
 
 /// The purpose of the RTCP RTT Echo Request/Response packets is to allow RIST endpoints to measure
 /// the Round Trip Time (RTT) to the remote endpoint. The RTT information can be used by receivers
@@ -48,14 +46,14 @@ pub struct RttEcho {
 impl RttEcho {
     /// Creates a new RTT echo request.
     /// - `padding_size` is the number of 32 bits padding you want.
-    pub fn new_request(ssrc: u32, padding_size: u32) -> Self {
+    pub fn new_request(ssrc: u32, padding_size: u32, now: Instant) -> Self {
         Self {
             header: Header {
                 version: VERSION.into(),
                 padding: false,
                 packet_specific: (Subtype::EchoRequest as u8).into(),
                 packet_type: PacketType::App as u8,
-                length: 5 + padding_size as u16,
+                length: Self::calculate_length(padding_size),
             },
             ssrc,
             name: RIST_NAME,
@@ -64,58 +62,48 @@ impl RttEcho {
             padding_size,
         }
     }
-}
 
-/// Bitmask-based retransmissions shall be requested using the Generic NACK Message.
-pub struct GenericNack<'a> {
-    pub header: Header,
-
-    /// The synchronization source identifier for the originator of this packet. This field
-    /// shall be ignored by the RIST sender.
-    pub ssrc_packet_sender: u32,
-
-    /// The synchronization source identifier of the media source that this feedback request is related to.
-    /// As indicated later in this document, the LSB of the SSRC is used to differentiate between original
-    /// packets and retransmitted packets. The RIST receiver may use either value in the request packet.
-    pub ssrc_media_src: u32,
-
-    /// A Generic NACK message may contain multiple FCI fields.
-    pub fcis: &'a [Fci],
-}
-
-impl<'a> GenericNack<'a> {
-    pub fn new(ssrc_media_src: u32, fcis: &'a [Fci]) -> Self {
+    pub fn new_response(
+        ssrc: u32,
+        timestamp: u64,
+        processing_delay: u64,
+        padding_size: u32,
+    ) -> Self {
         Self {
             header: Header {
                 version: VERSION.into(),
                 padding: false,
-                packet_specific: GENERIC_NACK_CODE.into(),
-                packet_type: PacketType::Feedback as u8,
-                length: 0, //TODO
+                packet_specific: (Subtype::EchoResponse as u8).into(),
+                packet_type: PacketType::App as u8,
+                length: Self::calculate_length(padding_size),
             },
-            ssrc_packet_sender: 0,
-            ssrc_media_src,
-            fcis,
+            ssrc,
+            name: RIST_NAME,
+            timestamp,
+            processing_delay,
+            padding_size,
         }
+    }
+
+    fn calculate_length(padding_size: u32) -> u16 {
+        5 + padding_size as u16
     }
 }
 
-/// Feedback Control Information (FCI): This field contains one or more instances of the
-/// 32-bit Generic NACK message. Each FCI can request up to 17 lost packets.
-pub struct Fci {
-    /// The PID field is used to specify a lost packet. The PID field refers to the RTP sequence number of the lost packet.
-    pub pid: u16,
+impl Marshal for RttEcho {
+    fn marshal(&self, buf: &mut [u8]) -> Result<usize, risty_core::MarshalError> {
+        self.header.pack_to_slice(&mut buf[0..4])?;
+        buf[4..8].copy_from_slice(&self.ssrc.to_be_bytes());
+        buf[8..12].copy_from_slice(&self.name.to_be_bytes());
+        buf[12..20].copy_from_slice(&self.timestamp.to_be_bytes());
+        buf[20..28].copy_from_slice(&self.processing_delay.to_be_bytes());
 
-    /// bitmask of following lost packets:
-    /// The BLP allows for reporting losses of any of the 16 RTP packets immediately following the RTP packet indicated
-    /// by the PID. Denoting the BLP's least significant bit as bit 1, and its most significant bit as bit 16, then bit
-    /// i of the bit mask is set to 1 if the receiver has not received RTP packet number (PID+i) (modulo 2^16) and
-    /// indicates this packet is lost; bit i is set to 0 otherwise. Note that the sender must not assume that a receiver
-    /// has received a packet because its bit mask was set to 0. For example, the least significant bit of the BLP would
-    /// be set to 1 if the packet corresponding to the PID and the following packet have been lost. However, the sender
-    /// cannot infer that packets PID+2 through PID+16 have been received simply because bits 2 through 15 of the BLP are 0;
-    /// all the sender knows is that the receiver has not reported them as lost at this time.
-    pub blp: u16,
+        Ok(self.marshal_size())
+    }
+
+    fn marshal_size(&self) -> usize {
+        28 + 4 * self.padding_size as usize
+    }
 }
 
 pub struct RangeBasedNACK<'a> {
@@ -140,7 +128,7 @@ impl<'a> RangeBasedNACK<'a> {
             header: Header {
                 version: VERSION.into(),
                 padding: false,
-                packet_specific: GENERIC_NACK_CODE.into(),
+                packet_specific: (Subtype::RangeBasedNACK as u8).into(),
                 packet_type: PacketType::Feedback as u8,
                 length: 0, //TODO
             },
