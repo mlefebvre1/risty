@@ -1,2 +1,3 @@
 [workspace]
-members = ["risty-proto/"]
+members = ["risty-core", "risty-proto/"]
+resolver = "2"

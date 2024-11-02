@@ -51,9 +51,9 @@ impl RttEcho {
     pub fn new_request(ssrc: u32, padding_size: u32) -> Self {
         Self {
             header: Header {
-                version: VERSION,
+                version: VERSION.into(),
                 padding: false,
-                packet_specific: Subtype::EchoRequest as u8,
+                packet_specific: (Subtype::EchoRequest as u8).into(),
                 packet_type: PacketType::App as u8,
                 length: 5 + padding_size as u16,
             },
@@ -87,9 +87,9 @@ impl<'a> GenericNack<'a> {
     pub fn new(ssrc_media_src: u32, fcis: &'a [Fci]) -> Self {
         Self {
             header: Header {
-                version: VERSION,
+                version: VERSION.into(),
                 padding: false,
-                packet_specific: GENERIC_NACK_CODE,
+                packet_specific: GENERIC_NACK_CODE.into(),
                 packet_type: PacketType::Feedback as u8,
                 length: 0, //TODO
             },
@@ -138,9 +138,9 @@ impl<'a> RangeBasedNACK<'a> {
     pub fn new(ssrc: u32, packet_ranges: &'a [PacketRangeRequest]) -> Self {
         Self {
             header: Header {
-                version: VERSION,
+                version: VERSION.into(),
                 padding: false,
-                packet_specific: GENERIC_NACK_CODE,
+                packet_specific: GENERIC_NACK_CODE.into(),
                 packet_type: PacketType::Feedback as u8,
                 length: 0, //TODO
             },

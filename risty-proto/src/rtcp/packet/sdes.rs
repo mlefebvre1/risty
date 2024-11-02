@@ -1,4 +1,5 @@
 use super::header::{Header, PacketType, VERSION};
+
 struct Sdes {
     pub header: Header,
 
@@ -19,9 +20,9 @@ impl Sdes {
 
 fn sdes_header(length: u16) -> Header {
     Header {
-        version: VERSION,
+        version: VERSION.into(),
         padding: false,
-        packet_specific: 1,
+        packet_specific: 1.into(),
         packet_type: PacketType::Sdes as u8,
         length,
     }
