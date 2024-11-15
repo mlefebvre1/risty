@@ -7,5 +7,6 @@ edition = "2021"
 
 [dependencies]
 packed_struct = "0.10"
-thiserror = "1"
+thiserror = "2"
 risty-core = { path = "../risty-core" }
+rand = { version = "0.8", features = ["std_rng"] }
