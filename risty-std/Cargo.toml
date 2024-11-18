@@ -1,0 +1,11 @@
+[package]
+name = "risty-std"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+risty-runtime = { path = "../risty-runtime" }
+risty-core = { path = "../risty-core" }
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+rand = "0.8"

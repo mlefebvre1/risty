@@ -5,4 +5,5 @@ edition = "2021"
 
 [dependencies]
 num = "0.4"
-thiserror = "1"
+thiserror = "2"
+risty-proto = { path = "../risty-proto" }

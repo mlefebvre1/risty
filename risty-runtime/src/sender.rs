@@ -8,10 +8,10 @@ pub struct Sender {
     rtp_sender: RtpSender,
 }
 
-impl Sender {
-    pub fn new(config: SenderConfig) -> Self {
-        Self {
-            rtp_sender: RtpSender::new(config.rtp_config),
-        }
-    }
-}
+// impl Sender {
+//     pub fn new(config: SenderConfig) -> Self {
+//         Self {
+//             rtp_sender: RtpSender::new(config.rtp_config),
+//         }
+//     }
+// }

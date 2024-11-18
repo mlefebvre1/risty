@@ -3,7 +3,7 @@ use risty_core::Marshal;
 use crate::rtp::header::Header;
 
 pub struct Packet<'a> {
-    header: Header,
+    header: &'a Header,
     payload: &'a [u8],
 }
 
@@ -25,7 +25,7 @@ impl<'a> Marshal for Packet<'a> {
 }
 
 impl<'a> Packet<'a> {
-    pub fn new(header: Header, payload: &'a [u8]) -> Self {
+    pub fn new(header: &'a Header, payload: &'a [u8]) -> Self {
         Self { header, payload }
     }
 }
