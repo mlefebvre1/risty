@@ -1,11 +1,9 @@
-use std::time::Duration;
-
 use num::Integer;
 
-struct Config {
-    buffer_size: Duration,
-    max_number_of_retry_per_packet: u32,
-}
+// struct Config {
+//     buffer_size: Duration,
+//     max_number_of_retry_per_packet: u32,
+// }
 
 /// RIST senders shall transmit the RTP media packets to the configured IP address of the RIST
 /// receiver and a user-selected UDP destination port P, where P is an even number between 2
