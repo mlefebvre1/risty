@@ -2,4 +2,4 @@ mod common;
 
 mod rtp_sender;
 
-pub use rtp_sender::{RtpConfig, RtpSender};
+pub use rtp_sender::RtpSender;

@@ -16,7 +16,7 @@ use risty_core::Marshal;
 //    |            contributing source (CSRC) identifiers             |
 //    |                             ....                              |
 //    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-#[derive(PackedStruct, Debug, PartialEq, Eq)]
+#[derive(PackedStruct, Debug, PartialEq, Eq, Clone)]
 #[packed_struct(bit_numbering = "msb0")]
 pub struct Header {
     // This field identifies the version of RTP. Always 2.

@@ -1,6 +1,6 @@
 use anyhow::Result;
 use clap::Parser;
-use risty_runtime::{RtpConfig, RtpSender};
+use risty_runtime::RtpSender;
 use std::{
     net::UdpSocket,
     time::{Duration, SystemTime, UNIX_EPOCH},
@@ -24,23 +24,22 @@ fn main() -> Result<()> {
 
     let media_payload: Vec<u8> = (0..1300u16).map(|i| i as u8).collect();
 
-    let mut rtp_sender = RtpSender::new(
-        RtpConfig {
-            rtp_pt: 96,
-            peer_sockaddr: cli.remote_addr,
-            rtp_clock_frequency: 90_000,
-        },
-        SystemTime::now().duration_since(UNIX_EPOCH)?,
-    );
+    let mut rtp_sender = RtpSender::new()
+        .set_payload_type(96)
+        .set_clock_frequency(90_000)
+        .set_buffer_size(2048)
+        .build()?;
 
     loop {
-        let transmit = rtp_sender.poll_rtp_transmit(
-            &media_payload,
+        rtp_sender.push_to_queue(
+            media_payload.clone(),
             SystemTime::now().duration_since(UNIX_EPOCH)?,
             false,
-            &mut send_buf,
         );
-        let _n = udpsock.send_to(&send_buf[0..transmit.buf_size], &transmit.remote_sockaddr)?;
+
+        let n = rtp_sender
+            .poll_transmit(&mut send_buf, SystemTime::now().duration_since(UNIX_EPOCH)?)?;
+        let _n = udpsock.send_to(&send_buf[0..n], &cli.remote_addr)?;
         std::thread::sleep(Duration::from_millis(500));
     }
 }

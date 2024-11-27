@@ -2,12 +2,12 @@ use risty_core::Marshal;
 
 use crate::rtp::header::Header;
 
-pub struct Packet<'a> {
-    header: &'a Header,
-    payload: &'a [u8],
+pub struct Packet {
+    header: Header,
+    payload: Vec<u8>,
 }
 
-impl<'a> Marshal for Packet<'a> {
+impl Marshal for Packet {
     fn marshal(&self, buf: &mut [u8]) -> Result<usize, risty_core::MarshalError> {
         let header_size = self.header.marshal_size();
         let _ = self.header.marshal(&mut buf[0..header_size])?;
@@ -24,8 +24,8 @@ impl<'a> Marshal for Packet<'a> {
     }
 }
 
-impl<'a> Packet<'a> {
-    pub fn new(header: &'a Header, payload: &'a [u8]) -> Self {
+impl Packet {
+    pub fn new(header: Header, payload: Vec<u8>) -> Self {
         Self { header, payload }
     }
 }
